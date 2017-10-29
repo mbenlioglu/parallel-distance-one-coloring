@@ -21,4 +21,4 @@ nlpkkt240.tar.gz:
 	mkdir -p data 
 	wget -P ./data/ https://sparse.tamu.edu/MM/Schenk/nlpkkt240.tar.gz
 clean:
-	rm ./data/af_shell3.tar.gz ./data/bone010.tar.gz ./data/coPapersDBLP.tar.gz ./data/nlpkkt120.tar.gz nlpkkt240.tar.gz
+	rm ./data/af_shell3.tar.gz ./data/bone010.tar.gz ./data/coPapersDBLP.tar.gz ./data/nlpkkt120.tar.gz ./data/nlpkkt240.tar.gz
