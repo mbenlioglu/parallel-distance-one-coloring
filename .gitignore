@@ -292,3 +292,6 @@ __pycache__/
 *.exe
 *.out
 *.app
+
+# Input data folder
+[Dd]ata/
