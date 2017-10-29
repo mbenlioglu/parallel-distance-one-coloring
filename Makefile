@@ -1,4 +1,4 @@
-coloring: coloring.cpp
+coloring: ./src/coloring.cpp
 	gcc ./src/graphio.c -c -O3
 	gcc ./src/mmio.c -c -O3
 	g++ ./src/coloring.cpp -fopenmp -c -O3
