@@ -1,4 +1,4 @@
-2# Parallelized Distance-1 Graph Coloring
+# Parallelized Distance-1 Graph Coloring
 This program executes sequential and parallel versions of distance-1 graph coloring algorithm, outputs the execution
 times of sequential and parallel versions(with 1, 2, 4, 8, 16 threads) as well as the total number of color used in
 each execution and runs a correctness check to confirm no adjacent vertices has the same color.
