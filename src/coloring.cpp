@@ -7,11 +7,6 @@
 *
 */
 
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
-#include <omp.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif /*__cplusplus*/
@@ -23,6 +18,13 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif /*__cplusplus*/
+
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
+#include <omp.h>
+#include "GraphColoring.h"
+
 
 #define DEBUG
 
@@ -46,7 +48,7 @@ inline bool is_correct(etype *row, vtype *col, vtype nov, int colors[])
 	return true;
 }
 
-inline int num_of_colors(int colors[], int size)
+inline int num_of_colors(int colors[], int size) // TODO: might not be needed, keep just in case
 {
 	std::sort(colors, colors + size);
 
@@ -66,18 +68,19 @@ inline int num_of_colors(int colors[], int size)
 	return num;
 }
 
-void color_graph_seq(etype *row, vtype *col, vtype nov, int colors[])
+int color_graph_seq(etype *row, vtype *col, vtype nov, int colors[])
 {
-	// create MRV array (0 for all vertices at the beginning)
+	int numOfColors = 0; // colors represented as ints (infact, they are). last number this value takes will represent color count.
 
-	// create most constraining vertex array (initially # of neighbours)
-
-	// least constraining value (i.e. most common d-2 color)
+	// initialize graphColoring object with the graph.
+	GraphColoring gc(row, col, nov);
+	numOfColors = gc.colorGraph(colors);
+	return numOfColors;
 }
 
 void color_graph_par(etype *row, vtype *col, vtype nov, int colors[])
 {
-	// TODO: implement this
+	// TODO: parallel version, implement this
 }
 
 void print_usage()
@@ -119,11 +122,11 @@ int main(int argc, char *argv[])
 	// Sequential
 	std::cout << "Starting sequential algorithm...";
 	startTime = omp_get_wtime();
-	color_graph_seq(row_ptr, col_ind, nov, colors);
+	colorCntSeq = color_graph_seq(row_ptr, col_ind, nov, colors);
 	endTime = omp_get_wtime();
 	std::cout << "ended\n";
 	execTimeSeq = endTime - startTime;
-	colorCntSeq = num_of_colors(colors, nov);
+	//colorCntSeq = num_of_colors(colors, nov); //not needed
 #ifdef DEBUG
 	std::cout << "Running correctness check..." << is_correct(row_ptr, col_ind, nov, colors) ? "correct\n" : "wrong!\n";
 #endif // DEBUG

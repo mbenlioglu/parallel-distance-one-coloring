@@ -18,8 +18,8 @@ Input data is in [MTX format](http://math.nist.gov/MatrixMarket/formats.html) an
 for processing. 
 
 Another Makefile is also included to compile codes into executable in Linux environment (Use visual studio with /openmp flag
-for Windows). Executing following command under "./src" will create an executable named "coloring" which takes single input
-argument, which is the path to the dataset.
+for Windows). Executing following command in the project root will create an executable named "coloring" which takes single
+input argument, which is the path to the dataset.
 
     $ make
 
