@@ -24,7 +24,7 @@ private:
 	typedef struct Node
 	{
 		std::vector<int> constraints; // constraints of the current node
-		std::vector<std::pair<int, int>> d2Colors; // colors of distance-2 neighbours pairs of (id, color)
+		std::vector<std::pair<int, int> > d2Colors; // colors of distance-2 neighbours pairs of (id, color)
 		int effectCnt; // how many vertices will it affect if colored
 		int prev, next;
 	}Node;
