@@ -42,11 +42,11 @@ typedef	struct perfData
 int detect_conflicts(etype *row, vtype *col, vtype nov, int colors[], std::vector<int> &out)
 {
 #pragma omp parallel for
-	for (size_t i = 0; i < nov; i++)
+	for (int i = 0; i < nov; i++)
 	{
 		int c = colors[i];
 		int numAdj = row[i + 1] - row[i];
-		for (size_t j = 0; j < numAdj; j++)
+		for (int j = 0; j < numAdj; j++)
 		{
 			if (colors[col[j]] == c)
 			{
@@ -62,7 +62,7 @@ inline int num_of_colors(int colors[], int size) // TODO: might not be needed, k
 {
 	std::sort(colors, colors + size);
 
-	int largest, num;
+	int largest;
 	largest = -1;
 
 	for (size_t i = 0; i < size; i++)
@@ -82,7 +82,7 @@ namespace Direct
 	*/
 	int getSmallestAvailableColor(etype *row, vtype *col, int vertex, int colors[])
 	{
-		int color, colStart, colEnd;
+		int colStart, colEnd;
 		bool *isColorUsed;
 		colStart = row[vertex];
 		colEnd = row[vertex + 1];
@@ -141,7 +141,7 @@ namespace Direct
 		// first stage coloring
 		startTime = omp_get_wtime();
 #pragma omp for
-		for (size_t i = 0; i < nov; i++)
+		for (int i = 0; i < nov; i++)
 		{
 			int c = getSmallestAvailableColor(row, col, i, colors);
 			colors[i] = c;
@@ -152,7 +152,7 @@ namespace Direct
 		{
 			detect_conflicts(row, col, nov, colors, conflictedVertices);
 #pragma omp for
-			for (size_t i = 0; i < conflictedVertices.size(); i++)
+			for (int i = 0; i < conflictedVertices.size(); i++)
 			{
 				int c = getSmallestAvailableColor(row, col, i, colors);
 				colors[i] = c;
@@ -176,7 +176,6 @@ namespace Heuristic
 	{
 		perfData result;
 		double startTime, endTime;
-		int colorCount;
 
 		// Preprocessing
 		startTime = omp_get_wtime();
@@ -197,7 +196,7 @@ namespace Heuristic
 
 	perfData color_graph_par(etype *row, vtype *col, vtype nov, int colors[])
 	{
-
+		return perfData();
 	}
 }
 //===========================================================================================================================
@@ -215,7 +214,7 @@ int main(int argc, char *argv[])
 	vtype *col_ind;
 	ewtype *ewghts;
 	vwtype *vwghts;
-	vtype nov, source;
+	vtype nov;
 
 	// Graph reading
 	if (argc != 2)
@@ -232,7 +231,6 @@ int main(int argc, char *argv[])
 
 	// Performance analysis
 	perfData perfSeq, perfPar[5];
-	double startTime, endTime;
 
 	int *colors = new int[nov];
 	std::fill_n(colors, nov, -1);
@@ -285,8 +283,6 @@ int main(int argc, char *argv[])
 	std::cout << std::setfill('*') << std::setw(65) << "-\n";
 	std::cout << "Starting performance analysis for heuristic approch\n\n";
 	std::cout << std::setfill('*') << std::setw(65) << "-\n";
-
-	double prepTimeSeq, prepTimePar[5];
 
 	// Sequential
 	std::cout << "Starting sequential algorithm...";
