@@ -42,19 +42,13 @@ typedef	struct perfData
 */
 int detect_conflicts(etype *row, vtype *col, vtype nov, std::vector<int> &colors, std::vector<int> &out)
 {
-#pragma omp parallel for
 	for (int i = 0; i < nov; i++)
 	{
 		int c = colors[i];
-		int numAdj = row[i + 1] - row[i];
-		for (int j = 0; j < numAdj; j++)
-		{
+		int colStart = row[i], colEnd = row[i + 1];
+		for (int j = colStart; j < colEnd; j++)
 			if (colors[col[j]] == c)
-			{
-#pragma omp critical
 				out.push_back(i < col[j] ? i : col[j]);
-			}
-		}
 	}
 	return out.size() / 2;
 }
