@@ -20,6 +20,7 @@ extern "C" {
 #endif /*__cplusplus*/
 
 #include <iostream>
+#include <string>
 #include <iomanip>
 #include <algorithm>
 #include <omp.h>
@@ -39,7 +40,7 @@ typedef	struct perfData
 	Traverses entire graph to find conflicts (i.e. adjecent vertices with same color), returns the number of such
 	conflicts as return value, indices of these vertices are written into out vector.
 */
-int detect_conflicts(etype *row, vtype *col, vtype nov, int colors[], std::vector<int> &out)
+int detect_conflicts(etype *row, vtype *col, vtype nov, std::vector<int> &colors, std::vector<int> &out)
 {
 #pragma omp parallel for
 	for (int i = 0; i < nov; i++)
@@ -58,14 +59,14 @@ int detect_conflicts(etype *row, vtype *col, vtype nov, int colors[], std::vecto
 	return out.size() / 2;
 }
 
-inline int num_of_colors(int colors[], int size) // TODO: might not be needed, keep just in case
+inline int num_of_colors(std::vector<int> &colors) // TODO: might not be needed, keep just in case
 {
-	std::sort(colors, colors + size);
+	std::sort(colors.begin(), colors.end());
 
 	int largest;
 	largest = -1;
 
-	for (size_t i = 0; i < size; i++)
+	for (size_t i = 0; i < colors.size(); i++)
 		if (colors[i] > largest)
 			largest = colors[i];
 
@@ -80,7 +81,7 @@ namespace Direct
 	/*
 		Traverses the neighbours of the given vertex and returns the smallest available color for the vertex
 	*/
-	int getSmallestAvailableColor(etype *row, vtype *col, int vertex, int colors[])
+	int getSmallestAvailableColor(etype *row, vtype *col, int vertex, std::vector<int> &colors)
 	{
 		int colStart, colEnd;
 		bool *isColorUsed;
@@ -93,7 +94,7 @@ namespace Direct
 			if (colors[col[i]] > max)
 				max = colors[col[i]];
 
-		if (max < 1) return 0;
+		if (max < 0) return 0;
 
 		// track whether a color is used it not
 		isColorUsed = new bool[max + 1]();
@@ -109,7 +110,7 @@ namespace Direct
 		return max + 1;
 	}
 
-	perfData color_graph_seq(etype *row, vtype *col, vtype nov, int colors[])
+	perfData color_graph_seq(etype *row, vtype *col, vtype nov, std::vector<int> &colors)
 	{
 		perfData result;
 		double startTime, endTime;
@@ -130,7 +131,7 @@ namespace Direct
 		return result;
 	}
 
-	perfData color_graph_par(etype *row, vtype *col, vtype nov, int colors[])
+	perfData color_graph_par(etype *row, vtype *col, vtype nov, std::vector<int> &colors)
 	{
 		perfData result;
 		double startTime, endTime;
@@ -162,7 +163,7 @@ namespace Direct
 		} while (conflictedVertices.size());
 		endTime = omp_get_wtime();
 
-		result.colorCnt = num_of_colors(colors, nov);
+		result.colorCnt = num_of_colors(colors);
 		result.execTime = endTime - startTime;
 		result.mergeConflictCnt = mergeConflictCnt;
 		result.prepTime = 0;
@@ -172,7 +173,7 @@ namespace Direct
 
 namespace Heuristic
 {
-	perfData color_graph_seq(etype *row, vtype *col, vtype nov, int colors[])
+	perfData color_graph_seq(etype *row, vtype *col, vtype nov, std::vector<int> &colors)
 	{
 		perfData result;
 		double startTime, endTime;
@@ -194,7 +195,7 @@ namespace Heuristic
 		return result;
 	}
 
-	perfData color_graph_par(etype *row, vtype *col, vtype nov, int colors[])
+	perfData color_graph_par(etype *row, vtype *col, vtype nov, std::vector<int> &colors)
 	{
 		return perfData();
 	}
@@ -232,15 +233,14 @@ int main(int argc, char *argv[])
 	// Performance analysis
 	perfData perfSeq, perfPar[5];
 
-	int *colors = new int[nov];
-	std::fill_n(colors, nov, -1);
+	std::vector<int> colors(nov, -1);
 
 	//===========================================================================================================================
 	// Direct Approach
 	//===========================================================================================================================
-	std::cout << std::setfill('*') << std::setw(65) << "-\n";
+	std::cout << std::setfill('*') << std::setw(100) << "-\n";
 	std::cout << "Starting performance analysis for direct approch\n\n";
-	std::cout << std::setfill('*') << std::setw(65) << "-\n";
+	std::cout << std::setfill('*') << std::setw(100) << "-\n";
 	
 	// Sequential
 	std::cout << "Starting sequential algorithm...";
@@ -248,73 +248,77 @@ int main(int argc, char *argv[])
 	std::cout << "ended\n";
 #ifdef DEBUG
 	std::vector<int> out;
-	std::cout << "Running correctness check..." << !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
+	std::string s = !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
+	std::cout << "Running correctness check..." << s;
 	out.clear();
 #endif // DEBUG
-	std::fill_n(colors, nov, -1); // reinitialize
+	colors = std::vector<int>(colors.size(), -1); // reinitialize
 	
 	// Parallel
 	for (size_t i = 0; i < 5; i++)
 	{
-		omp_set_num_threads(i);
-		std::cout << "Starting parallel algorithm with " << i << " threads...";
+		omp_set_num_threads(i + 1);
+		std::cout << "Starting parallel algorithm with " << i + 1 << " threads...";
 		perfPar[i] = Direct::color_graph_par(row_ptr, col_ind, nov, colors);
 		std::cout << "ended\n";
 #ifdef DEBUG
-		std::cout << "Running correctness check..." << !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
+		s = !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
+		std::cout << "Running correctness check..." << s;
 		out.clear();
 #endif // DEBUG
-		std::fill_n(colors, nov, -1); // reinitialize
+		colors = std::vector<int>(colors.size(), -1); // reinitialize
 	}
 
 	// Print results
-	printf("| %-15s | %-12s | %-12s | %-15s | %-15s |\n", "Algorithm", "Thread Count", "# of Conf.Fixes", "# of Colors", "Exec. Time");
-	std::cout << std::setfill('-') << std::setw(65) << "-\n\n";
-	printf("| %-15s | %-12d | %-12d | %-15d | %-12.8f s |\n",
+	printf("| %-15s | %-12s | %-15s | %-12s | %-15s |\n", "Algorithm", "Thread Count", "# of Conf.Fixes", "# of Colors", "Exec. Time");
+	std::cout << std::setfill('-') << std::setw(85) << "-\n";
+	printf("| %-15s | %-12d | %-15d | %-12d | %-12.10f s |\n",
 		"Sequential", 1, perfSeq.mergeConflictCnt, perfSeq.colorCnt, perfSeq.execTime);
 	for (size_t i = 0; i < 5; i++)
-		printf("| %-15s | %-12d | %-12d | %-15d | %-12.8f s |\n",
+		printf("| %-15s | %-12d | %-15d | %-12d | %-12.10f s |\n",
 			"Parallel", (2 << i) / 2, perfPar[i].mergeConflictCnt, perfPar[i].colorCnt, perfPar[i].execTime);
 	std::cout << "\n";
 
 	//===========================================================================================================================
 	// Heuristic Approach
 	//===========================================================================================================================
-	std::cout << std::setfill('*') << std::setw(65) << "-\n";
+	std::cout << std::setfill('*') << std::setw(100) << "-\n";
 	std::cout << "Starting performance analysis for heuristic approch\n\n";
-	std::cout << std::setfill('*') << std::setw(65) << "-\n";
+	std::cout << std::setfill('*') << std::setw(100) << "-\n";
 
 	// Sequential
 	std::cout << "Starting sequential algorithm...";
 	perfSeq = Heuristic::color_graph_seq(row_ptr, col_ind, nov, colors);
 	std::cout << "ended\n";
 #ifdef DEBUG
-	std::cout << "Running correctness check..." << !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
+	s = !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
+	std::cout << "Running correctness check..." << s;
 	out.clear();
 #endif // DEBUG
-	std::fill_n(colors, nov, -1); // reinitialize
+	colors = std::vector<int>(colors.size(), -1); // reinitialize
 
 	// Parallel
 	for (size_t i = 0; i < 5; i++)
 	{
-		omp_set_num_threads(i);
-		std::cout << "Starting parallel algorithm with " << i << " threads...";
+		omp_set_num_threads(i + 1);
+		std::cout << "Starting parallel algorithm with " << i + 1 << " threads...";
 		perfPar[i] = Heuristic::color_graph_par(row_ptr, col_ind, nov, colors);
 		std::cout << "ended\n";
 #ifdef DEBUG
-		std::cout << "Running correctness check..." << !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
+		s = !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
+		std::cout << "Running correctness check..." << s;
 		out.clear();
 #endif // DEBUG
-		std::fill_n(colors, nov, -1); // reinitialize
+		colors = std::vector<int>(colors.size(), -1); // reinitialize
 	}
 
 	// Print results
-	printf("| %-15s | %-12s | %-12s | %-15s | %-15s | %-15s |\n", "Algorithm", "Thread Count", "# of Conf.Fixes", "# of Colors", "Prep. Time", "Exec. Time");
-	std::cout << std::setfill('-') << std::setw(65) << "-\n\n";
-	printf("| %-15s | %-12d | %-12d | %-15d | %-12.8f s | %-12.8f s |\n",
+	printf("| %-15s | %-12s | %-15s | %-12s | %-15s | %-15s |\n", "Algorithm", "Thread Count", "# of Conf.Fixes", "# of Colors", "Prep. Time", "Exec. Time");
+	std::cout << std::setfill('-') << std::setw(105) << "-\n";
+	printf("| %-15s | %-12d | %-15d | %-12d | %-12.10f s | %-12.10f s |\n",
 		"Sequential", 1, perfSeq.mergeConflictCnt, perfSeq.colorCnt, perfSeq.prepTime, perfSeq.execTime);
 	for (size_t i = 0; i < 5; i++)
-		printf("| %-15s | %-12d | %-12d | %-15d | %-12.8f s | %-12.8f s |\n",
+		printf("| %-15s | %-12d | %-15d | %-12d | %-12.10f s | %-12.10f s |\n",
 			"Parallel", (2 << i) / 2, perfPar[i].mergeConflictCnt, perfPar[i].colorCnt, perfPar[i].prepTime,perfPar[i].execTime);
 	std::cout << "\n";
 

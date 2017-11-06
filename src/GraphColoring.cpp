@@ -38,7 +38,7 @@ GraphColoring::~GraphColoring()
 {
 }
 
-int GraphColoring::colorGraph(int colors[])
+int GraphColoring::colorGraph(std::vector<int> &colors)
 {
 	//TODO: on each step; get first element from list, pick best color, update list.
 	return 0;

@@ -18,7 +18,7 @@ class GraphColoring
 public:
 	GraphColoring(etype* row, vtype* col, vtype nov);
 	~GraphColoring();
-	int colorGraph(int colors[]);
+	int colorGraph(std::vector<int> &colors);
 
 private:
 	typedef struct Node
