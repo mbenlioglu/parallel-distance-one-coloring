@@ -65,8 +65,6 @@ int detect_conflicts(etype *row, vtype *col, vtype nov, std::vector<int> &colors
 
 inline int num_of_colors(std::vector<int> &colors) // TODO: might not be needed, keep just in case
 {
-	std::sort(colors.begin(), colors.end());
-
 	int largest;
 	largest = -1;
 
@@ -139,13 +137,13 @@ namespace Direct
 	{
 		perfData result;
 		double startTime, endTime;
-		
+
 		int mergeConflictCnt = 0;
 		std::vector<int> conflictedVertices;
 
 		// first stage coloring
 		startTime = omp_get_wtime();
-#pragma omp for
+#pragma omp parallel for
 		for (int i = 0; i < nov; i++)
 		{
 			int c = getSmallestAvailableColor(row, col, i, colors);
@@ -155,14 +153,14 @@ namespace Direct
 		// fix conflict
 		do
 		{
+			conflictedVertices.clear();
 			detect_conflicts(row, col, nov, colors, conflictedVertices);
-#pragma omp for
+#pragma omp parallel for
 			for (int i = 0; i < conflictedVertices.size(); i++)
 			{
 				int c = getSmallestAvailableColor(row, col, i, colors);
 				colors[i] = c;
 			}
-			conflictedVertices.clear();
 			++mergeConflictCnt;
 		} while (conflictedVertices.size());
 		endTime = omp_get_wtime();
@@ -252,8 +250,9 @@ int main(int argc, char *argv[])
 	std::cout << "ended\n";
 #ifdef DEBUG
 	std::vector<int> out;
+	std::cout << "Running correctness check...";
 	std::string s = !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
-	std::cout << "Running correctness check..." << s;
+	std::cout << s;
 	out.clear();
 #endif // DEBUG
 	colors = std::vector<int>(colors.size(), -1); // reinitialize
@@ -261,13 +260,14 @@ int main(int argc, char *argv[])
 	// Parallel
 	for (size_t i = 0; i < 5; i++)
 	{
-		omp_set_num_threads(i + 1);
-		std::cout << "Starting parallel algorithm with " << i + 1 << " threads...";
+		omp_set_num_threads((2 << i) / 2);
+		std::cout << "Starting parallel algorithm with " << (2 << i) / 2 << " threads...";
 		perfPar[i] = Direct::color_graph_par(row_ptr, col_ind, nov, colors);
 		std::cout << "ended\n";
 #ifdef DEBUG
+		std::cout << "Running correctness check...";
 		s = !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
-		std::cout << "Running correctness check..." << s;
+		std::cout << s;
 		out.clear();
 #endif // DEBUG
 		colors = std::vector<int>(colors.size(), -1); // reinitialize
@@ -295,8 +295,9 @@ int main(int argc, char *argv[])
 //	perfSeq = Heuristic::color_graph_seq(row_ptr, col_ind, nov, colors);
 //	std::cout << "ended\n";
 //#ifdef DEBUG
+//	std::cout << "Running correctness check...";
 //	s = !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
-//	std::cout << "Running correctness check..." << s;
+//	std::cout << s;
 //	out.clear();
 //#endif // DEBUG
 //	colors = std::vector<int>(colors.size(), -1); // reinitialize
@@ -304,13 +305,14 @@ int main(int argc, char *argv[])
 //	// Parallel
 //	for (size_t i = 0; i < 5; i++)
 //	{
-//		omp_set_num_threads(i + 1);
-//		std::cout << "Starting parallel algorithm with " << i + 1 << " threads...";
+//		omp_set_num_threads((2 << i) / 2);
+//		std::cout << "Starting parallel algorithm with " << (2 << i) / 2 << " threads...";
 //		perfPar[i] = Heuristic::color_graph_par(row_ptr, col_ind, nov, colors);
 //		std::cout << "ended\n";
 //#ifdef DEBUG
+//		std::cout << "Running correctness check...";
 //		s = !detect_conflicts(row_ptr, col_ind, nov, colors, out) ? "correct\n" : "wrong!\n";
-//		std::cout << "Running correctness check..." << s;
+//		std::cout << s;
 //		out.clear();
 //#endif // DEBUG
 //		colors = std::vector<int>(colors.size(), -1); // reinitialize
