@@ -158,7 +158,7 @@ namespace Direct
 #pragma omp parallel for
 			for (int i = 0; i < conflictedVertices.size(); i++)
 			{
-				int c = getSmallestAvailableColor(row, col, i, colors);
+				int c = getSmallestAvailableColor(row, col, conflictedVertices[i], colors);
 				colors[i] = c;
 			}
 			++mergeConflictCnt;
