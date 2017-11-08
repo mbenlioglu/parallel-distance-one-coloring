@@ -55,12 +55,12 @@ int detect_conflicts(etype *row, vtype *col, vtype nov, std::vector<int> &colors
 				if (!isDetected[conflictIndex])
 				{
 					isDetected[conflictIndex] = true;
-					out.push_back(i < col[j] ? i : col[j]);
+					out.push_back(conflictIndex);
 				}
 			}
 		}
 	}
-	return out.size() / 2;
+	return out.size();
 }
 
 inline int num_of_colors(std::vector<int> &colors) // TODO: might not be needed, keep just in case
@@ -138,7 +138,7 @@ namespace Direct
 		perfData result;
 		double startTime, endTime;
 
-		int mergeConflictCnt = 0;
+		int mergeConflictCnt = -1;
 		std::vector<int> conflictedVertices;
 
 		// first stage coloring
@@ -159,7 +159,7 @@ namespace Direct
 			for (int i = 0; i < conflictedVertices.size(); i++)
 			{
 				int c = getSmallestAvailableColor(row, col, conflictedVertices[i], colors);
-				colors[i] = c;
+				colors[conflictedVertices[i]] = c;
 			}
 			++mergeConflictCnt;
 		} while (conflictedVertices.size());
