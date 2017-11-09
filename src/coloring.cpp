@@ -40,9 +40,9 @@ typedef	struct perfData
 	Traverses entire graph to find conflicts (i.e. adjecent vertices with same color), returns the number of such
 	conflicts as return value, indices of these vertices are written into out vector.
 */
-int detect_conflicts(etype *row, vtype *col, vtype nov, int colors[], std::vector<int> &out)
+int detect_conflicts(etype *row, vtype *col, vtype nov, unsigned short int colors[], std::vector<int> &out)
 {
-	std::vector<bool> isDetected(nov, false);
+	bool *isDetected = new bool[nov]();
 	for (int i = 0; i < nov; i++)
 	{
 		int c = colors[i];
@@ -63,7 +63,7 @@ int detect_conflicts(etype *row, vtype *col, vtype nov, int colors[], std::vecto
 	return out.size();
 }
 
-inline int num_of_colors(vtype nov, int colors[])
+inline int num_of_colors(vtype nov, unsigned short int colors[])
 {
 	int largest;
 	largest = -1;
@@ -83,7 +83,7 @@ namespace Direct
 	/*
 		Traverses the neighbours of the given vertex and returns the smallest available color for the vertex
 	*/
-	int getSmallestAvailableColor(etype *row, vtype *col, int vertex, vtype nov, int colors[])
+	int getSmallestAvailableColor(etype *row, vtype *col, int vertex, vtype nov, unsigned short int colors[])
 	{
 		int colStart, colEnd;
 		colStart = row[vertex];
@@ -123,7 +123,7 @@ namespace Direct
 		return max + 1;
 	}
 
-	perfData color_graph_seq(etype *row, vtype *col, vtype nov, int colors[])
+	perfData color_graph_seq(etype *row, vtype *col, vtype nov, unsigned short int colors[])
 	{
 		perfData result;
 		double startTime, endTime;
@@ -143,8 +143,8 @@ namespace Direct
 		result.prepTime = result.mergeConflictCnt = 0;
 		return result;
 	}
-	;
-	perfData color_graph_par(etype *row, vtype *col, vtype nov, int colors[])
+
+	perfData color_graph_par(etype *row, vtype *col, vtype nov, unsigned short int colors[])
 	{
 		perfData result;
 		double startTime, endTime;
@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
 	// Performance analysis
 	perfData perfSeq, perfPar[5];
 
-	int *colors = new int[nov];
+	unsigned short int *colors = new unsigned short int[nov];
 	std::fill_n(colors, nov, -1);
 	//===========================================================================================================================
 	// Direct Approach
