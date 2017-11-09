@@ -86,22 +86,30 @@ namespace Direct
 	int getSmallestAvailableColor(etype *row, vtype *col, int vertex, std::vector<int> &colors)
 	{
 		int colStart, colEnd;
-		bool *isColorUsed;
 		colStart = row[vertex];
 		colEnd = row[vertex + 1];
 
 		// get max color in adjacents
 		int max = -1;
+		std::vector<int> adjecentColors(colEnd - colStart);
 		for (size_t i = colStart; i < colEnd; i++)
-			if (colors[col[i]] > max)
-				max = colors[col[i]];
+		{
+			adjecentColors[i - colStart] = colors[col[i]];
+			if (adjecentColors[i - colStart] > max)
+				max = adjecentColors[i - colStart];
+		}
 
 		if (max < 0) return 0;
 
 		// track whether a color is used it not
-		isColorUsed = new bool[max + 1]();
-		for (size_t i = colStart; i < colEnd; i++)
-			isColorUsed[colors[col[i]]] = true;
+		std::vector<bool> isColorUsed(max + 1, false);
+		for (size_t i = 0; i < adjecentColors.size(); i++)
+		{
+			if (adjecentColors[i] >= 0)
+			{
+				isColorUsed[adjecentColors[i]] = true;
+			}
+		}
 
 		//	return the smallest unused color
 		for (size_t i = 0; i < max + 1; i++)
@@ -132,7 +140,7 @@ namespace Direct
 		result.prepTime = result.mergeConflictCnt = 0;
 		return result;
 	}
-
+	;
 	perfData color_graph_par(etype *row, vtype *col, vtype nov, std::vector<int> &colors)
 	{
 		perfData result;
