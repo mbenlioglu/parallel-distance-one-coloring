@@ -91,14 +91,13 @@ int detect_conflicts(etype *row, vtype *col, vtype nov, short colors[], bool isD
 */
 inline int num_of_colors(vtype nov, short colors[])
 {
-	int largest;
-	largest = -1;
+	int largest = -1;
 
 	for (int i = 0; i < nov; i++)
 		if (colors[i] > largest)
 			largest = colors[i];
 
-	return largest;
+	return largest + 1;
 }
 
 /*
@@ -361,7 +360,7 @@ int main(int argc, char *argv[])
 	//===========================================================================================================================
 	// Not yet implemented... See docs for more information
 
-	std::cout << "Press Enter to continue...";
+	std::cout << "Press Enter to continue...\n";
 	std::cin.get();
 
 	return 0;
