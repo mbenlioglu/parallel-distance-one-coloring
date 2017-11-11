@@ -198,7 +198,7 @@ namespace Direct
 
 		int confArrSize = nov / 2 + 1;
 		int *conflictedVertices = new int[confArrSize]();
-		bool *isVertexDetected = new bool[confArrSize]();
+		bool *isVertexDetected = new bool[nov]();
 		static bool *isColorUsed;
 #pragma omp threadprivate(isColorUsed)
 
