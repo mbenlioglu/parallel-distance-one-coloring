@@ -24,12 +24,13 @@ extern "C" {
 #include <iomanip>
 #include <algorithm>
 #include <omp.h>
-#include <vector>
-#include "GraphColoring.h"
 
 
 #define DEBUG
 
+//===========================================================================================================================
+// Common Structs/Enums
+//===========================================================================================================================
 /*
 	Struct for reporting performance analysis results
 */
@@ -39,9 +40,13 @@ typedef	struct perfData
 	int colorCnt, mergeConflictCnt;
 }perfData;
 
+//===========================================================================================================================
+// Common Functions
+//===========================================================================================================================
+
 /*
 	Traverses entire graph to find conflicts (i.e. adjecent vertices with same color), returns the number of such
-	conflicts as return value, indices of these vertices are written into out vector.
+	conflicts as return value, indices of these vertices are written into out array.
 
 	*row and *col: pointers define the starting point of the graph
 	nov:		   number of vertices in the graph
@@ -111,6 +116,13 @@ int findMaxEdgeCnt(etype *row, vtype *col, vtype nov)
 	}
 
 	return max;
+}
+
+void print_usage()
+{
+	std::cout << "./coloring <filename> <optimization flag {-O1, -O2)}> \n";
+	std::cout << "Press Enter to continue...";
+	std::cin.get();
 }
 
 //===========================================================================================================================
@@ -250,41 +262,18 @@ namespace Direct
 
 namespace Heuristic
 {
-	perfData color_graph_seq(etype *row, vtype *col, vtype nov, std::vector<int> &colors)
+	perfData color_graph_seq(etype *row, vtype *col, vtype nov, int colors[])
 	{
-		perfData result;
-		double startTime, endTime;
-
-		// Preprocessing
-		startTime = omp_get_wtime();
-		// initialize graphColoring object with the graph.
-		GraphColoring gc(row, col, nov);
-		endTime = omp_get_wtime();
-		result.prepTime = endTime - startTime;
-
-		// Coloring
-		startTime = omp_get_wtime();
-		result.colorCnt = gc.colorGraph(colors);
-		endTime = omp_get_wtime();
-		result.execTime = endTime - startTime;
-		
-		result.mergeConflictCnt = 0;
-		return result;
+		throw std::exception("Not Implemented");
 	}
 
-	perfData color_graph_par(etype *row, vtype *col, vtype nov, std::vector<int> &colors)
+	perfData color_graph_par(etype *row, vtype *col, vtype nov, int colors[])
 	{
-		return perfData();
+		throw std::exception("Not Implemented");
 	}
 }
 //===========================================================================================================================
-
-void print_usage()
-{
-	std::cout << "./coloring <filename> <optimization flag {-O1, -O2)}> \n";
-	std::cout << "Press Enter to continue...";
-	std::cin.get();
-}
+//===========================================================================================================================
 
 int main(int argc, char *argv[])
 {
@@ -370,47 +359,7 @@ int main(int argc, char *argv[])
 	//===========================================================================================================================
 	// Heuristic Approach
 	//===========================================================================================================================
-//	std::cout << std::setfill('*') << std::setw(100) << "-\n";
-//	std::cout << "Starting performance analysis for heuristic approch\n\n";
-//	std::cout << std::setfill('*') << std::setw(100) << "-\n";
-//
-//	// Sequential
-//	std::cout << "Starting sequential algorithm...";
-//	perfSeq = Heuristic::color_graph_seq(row_ptr, col_ind, nov, colors);
-//	std::cout << "ended\n";
-//#ifdef DEBUG
-//	std::cout << "Running correctness check...";
-//	s = !detect_conflicts(row_ptr, col_ind, nov, colors, isDetected, out) ? "correct\n" : "wrong!\n";
-//	std::cout << s;
-//	std::fill_n(isDetected, outSize, false);
-//#endif // DEBUG
-//	std::fill_n(colors, nov, -1); // reinitialize
-//
-//	// Parallel
-//	for (int i = 0; i < 5; i++)
-//	{
-//		omp_set_num_threads((2 << i) / 2);
-//		std::cout << "Starting parallel algorithm with " << (2 << i) / 2 << " threads...";
-//		perfPar[i] = Heuristic::color_graph_par(row_ptr, col_ind, nov, colors);
-//		std::cout << "ended\n";
-//#ifdef DEBUG
-//		std::cout << "Running correctness check...";
-//		s = !detect_conflicts(row_ptr, col_ind, nov, colors, isDetected, out) ? "correct\n" : "wrong!\n";
-//		std::cout << s;
-//		std::fill_n(isDetected, outSize, false);
-//#endif // DEBUG
-//		std::fill_n(colors, nov, -1); // reinitialize
-//	}
-//
-//	// Print results
-//	printf("| %-15s | %-12s | %-15s | %-12s | %-15s | %-15s |\n", "Algorithm", "Thread Count", "# of Conf.Fixes", "# of Colors", "Prep. Time", "Exec. Time");
-//	std::cout << std::setfill('-') << std::setw(105) << "-\n";
-//	printf("| %-15s | %-12d | %-15d | %-12d | %-12.10f s | %-12.10f s |\n",
-//		"Sequential", 1, perfSeq.mergeConflictCnt, perfSeq.colorCnt, perfSeq.prepTime, perfSeq.execTime);
-//	for (int i = 0; i < 5; i++)
-//		printf("| %-15s | %-12d | %-15d | %-12d | %-12.10f s | %-12.10f s |\n",
-//			"Parallel", (2 << i) / 2, perfPar[i].mergeConflictCnt, perfPar[i].colorCnt, perfPar[i].prepTime,perfPar[i].execTime);
-//	std::cout << "\n";
+	// Not yet implemented... See docs for more information
 
 	std::cout << "Press Enter to continue...";
 	std::cin.get();

@@ -116,12 +116,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="coloring.cpp" />
-    <ClCompile Include="GraphColoring.cpp" />
     <ClCompile Include="graphio.c" />
     <ClCompile Include="mmio.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GraphColoring.h" />
     <ClInclude Include="graph.h" />
     <ClInclude Include="graphio.h" />
     <ClInclude Include="mmio.h" />
