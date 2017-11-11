@@ -17,8 +17,8 @@ download and extract the data into "./data/"
 Input data is in [MTX format](http://math.nist.gov/MatrixMarket/formats.html) and converted into [CRS format](http://netlib.org/linalg/html_templates/node91.html)
 for processing. 
 
-Another Makefile is also included to compile codes into executable in Linux environment (Use visual studio with /openmp flag
-for Windows). Executing following command in the project root will create an executable named "coloring" which takes single
+Another Makefile is also included to compile codes into executable in Linux environment (for Windows use visual studio with
+/openmp flag). Executing following command in the project root will create an executable named "coloring" which takes single
 input argument, which is the path to the dataset.
 
     $ make
@@ -30,27 +30,40 @@ The program will run sequential and parallel versions of the algorithm and outpu
 In this section, sequential and parallel version of the algorithm will be explained. Performance results of each algorithm can
 be found in results section.
 
-### Sequential Algorithm
-Since the size of the graphs are huge, the algorithm follows a greedy approach instead of dynamic programming, therefore
-total number of colors used in the graph may result in a suboptimal number. The algorithm implements backtracking search
-algorithm but instead of traversing all possibilities, in each step it selects the most suitable vertex and color without
-turning back to try other possibilities.
+Note that, colors are represented as short integers starting from 0 to 32,767. This is because, we know that number of maximum
+colors used in a graph is bounded by number of maximum edges a vertex can have, and since we are using sparse graphs, this number
+doesn’t even get close to the limit.
 
-Suitability metric for vertices is minimum remaining values (MRV), since we don’t have a limitation for maximum number of
-colors, definition for a vertex with MRV changes to a vertex that has the most constraints. As a tie-breaker among MRV
-variables, degree heuristic is used, which means the vertex that introduces the most constraints on the remaining vertices
-is chosen. Finally, the least constraining color is chosen (i.e. the one that introduces least number of new constraints to
-remaining vertices) as the color of the selected vertex.
+### Direct Approach
+#### Sequential Version
+Since the size of the graphs are huge, the algorithm follows a greedy approach instead of dynamic programming, therefore total
+number of colors used in the graph may result in a suboptimal number. In this approach, all the vertices are iterated over one-by-one
+to find appropriate color that satisfies distance-1 coloring conditions. 
 
-### Parallel Version
-Parallelized implementation uses a divide and conquer approach, meaning that the graph is divided into smaller subgraphs,
-which are colored separately and concurrently according to the sequential logic, then these sub graphs are combined to get
-the final answer.
+On each iteration (i.e. for every vertex), the smallest color that is not used by its neighboring vertices is assigned to the vertex.
+Therefore, this implantation favors a first-fit manner for assigned colors.
 
-Since the subgraphs are colored independently, possible conflicts occur at the borders of the subgraphs, therefore each
-combination step has a conflict detection and fixing step to remove these conflicts.
+In order to find the smallest available color, neighbors of the vertex are visited, and a Boolean array is used to store this
+information. Then, by iterating over this Boolean smallest unused color can be easily determined. By this approach, we can
+determine smallest unused color in O(k) time complexity, where k represents the number of neighbors of the vertex.
+
+#### Parallel version
+Parallelized version, uses the same approach as the sequential version, only difference is that multiple vertices are controlled
+and assigned at the same time, which introduces a race condition. Therefore, at the end of initial colorization step, a conflict
+detection phase occurs, where all graph is checked for conflicted vertices (i.e. distance-1 neighbors with same color) and these
+vertices recolored in parallel. Conflict detection phase repeats until there are no conflicts left on the graph.
 
 ## Results
-The following table shows the executions times of implementations explained in the previous sections.
+In this section, result tables containing various information about execution results is given.
 
-![Performance Result Table](/res/perf_results.png)
+### Direct Approach
+
+![Execution Time Result Table](/res/time_results_direct.png)
+
+**Table 1.1.:** Executions times, speedups and efficiencies of implementations explained in the "Direct Approach" section.
+
+![Color/Conflict fix Table](/res/color_conf_results_direct.png)
+
+**Table 1.2.:** Number of colors used, and number of conflict fix iterations of implementations explained in the "Direct Approach"
+section.
+
