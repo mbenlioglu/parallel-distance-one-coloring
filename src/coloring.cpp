@@ -265,11 +265,13 @@ namespace Heuristic
 	perfData color_graph_seq(etype *row, vtype *col, vtype nov, int colors[])
 	{
 		throw std::exception("Not Implemented");
+		return perfData();
 	}
 
 	perfData color_graph_par(etype *row, vtype *col, vtype nov, int colors[])
 	{
 		throw std::exception("Not Implemented");
+		return perfData();
 	}
 }
 //===========================================================================================================================
